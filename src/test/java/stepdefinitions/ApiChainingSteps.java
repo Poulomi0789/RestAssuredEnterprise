@@ -1,66 +1,51 @@
 package stepdefinitions;
 
-import io.cucumber.java.en.*;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.When;
+import io.cucumber.java.en.Then;
 import io.restassured.module.jsv.JsonSchemaValidator;
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import models.PostRequest;
 
-import static io.restassured.RestAssured.*;
-import static org.hamcrest.Matchers.*;
+public class ApiChainingSteps extends BaseSteps {
 
-public class ApiChainingSteps {
-    private Response response;
-    private int newPostId;
+    // IMPORTANT: Ensure there is NO "private Response response;" declaration here anymore!
 
     @Given("the base API is initialized")
     public void init() {
-        // In a real project, pull this from a config file
-        RestAssured.baseURI = "https://jsonplaceholder.typicode.com";
+        // Since we are setting BaseURI in the Client constructor now,
+        // this can be used for logging or specific setup.
+        System.out.println("Initializing Scenario on Thread: " + Thread.currentThread().getId());
     }
 
     @When("I create a post with title {string} and body {string}")
     public void createPost(String title, String body) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("title", title);
-        payload.put("body", body);
-        payload.put("userId", 1);
+        PostRequest payload = new PostRequest(title, body, 1);
 
-        response = given()
-                .contentType(ContentType.JSON)
-                .body(payload)
-                .when()
-                .post("/posts");
+        // FIX: Use setResponse() so CommonSteps can see it via ThreadLocal
+        setResponse(client.createPost(payload));
 
-        // Extract ID for chaining
-        if(response.statusCode() == 201) {
-            newPostId = response.jsonPath().getInt("id");
-            System.out.println("Created Post ID: " + newPostId);
-        }
-    }
-
-    @Then("the status code should be {int}")
-    public void verifyStatus(int code) {
-        response.then().statusCode(code);
-    }
-
-    @Then("the response should match the schema {string}")
-    public void verifySchema(String schemaPath) {
-        // Make sure the file exists in src/test/resources/schemas/post-schema.json
-        response.then().assertThat()
-                .body(JsonSchemaValidator.matchesJsonSchemaInClasspath(schemaPath));
+        // Extract ID for chaining and store in context
+        int generatedId = getResponse().jsonPath().getInt("id");
+        scenarioContext.setContext("POST_ID", generatedId);
     }
 
     @When("I retrieve comments for the newly created post")
     public void getComments() {
-        response = given()
-                .queryParam("postId", newPostId)
-                .when()
-                .get("/comments");
+        // Retrieve ID from the thread-safe ScenarioContext
+        Object postIdObj = scenarioContext.getContext("POST_ID");
 
-        System.out.println("Chained comments response: " + response.asString());
+        if (postIdObj == null) {
+            throw new RuntimeException("POST_ID not found in context! Ensure 'createPost' ran successfully.");
+        }
+
+        int postId = (int) postIdObj;
+        setResponse(client.getCommentsForPost(postId));
+    }
+
+    @Then("the response should match the schema {string}")
+    public void verifySchema(String schemaPath) {
+        // FIX: Use getResponse()
+        getResponse().then().assertThat()
+                .body(JsonSchemaValidator.matchesJsonSchemaInClasspath(schemaPath));
     }
 }

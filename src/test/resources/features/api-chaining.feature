@@ -3,6 +3,7 @@ Feature: API Chaining Demo
 
   Background:
     Given the base API is initialized
+    # This step is not required, base API added to hook. Kept this step for learning purpose
 
   Scenario: Create a post and then add a comment to that specific post
     # 1. Create the Post (POST)

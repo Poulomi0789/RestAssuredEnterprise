@@ -1,30 +1,49 @@
 package stepdefinitions;
 
+import assertions.ResponseAssertions;
+import clients.ApiChainingClient;
 import io.cucumber.java.en.*;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import models.PostRequest;
+import utils.ScenarioContext;
+
 import static org.hamcrest.Matchers.*;
 
-public class UserSteps {
-    Response response;
+public class UpdatePostSteps extends BaseSteps{
 
-    @Given("I set base URI")
-    public void i_set_base_uri() {
-        RestAssured.baseURI = "https://reqres.in/api";
+    //    private int newPostId;
+    private ApiChainingClient client = new ApiChainingClient();
+    // 1. Initialize the context
+    private ScenarioContext scenarioContext = new ScenarioContext();
+
+    @Given("I have a post with ID {int}")
+    public void setPostId(int id) {
+        scenarioContext.setContext("UPDATE_POST_ID", id);
     }
 
-    @When("I send GET request to {string}")
-    public void i_send_get_request_to(String path) {
-        response = RestAssured.get(path);
+    @When("I update the post with title {string} and body {string}")
+    public void updatePost(String title, String body) {
+        int id = (int) scenarioContext.getContext("UPDATE_POST_ID");
+        PostRequest updatePayload = new PostRequest(title, body, 1);
+        setResponse(client.updatePost(id, updatePayload));
     }
 
-    @Then("response status should be {int}")
-    public void response_status_should_be(Integer statusCode) {
-        response.then().statusCode(statusCode);
+    @Then("the response field {string} should be {string}")
+    public void verifyStringField(String fieldPath, String expectedValue) {
+        // Pull the response from context before asserting
+        Response res = (Response) scenarioContext.getContext("LATEST_RESPONSE");
+        ResponseAssertions.assertField(getResponse(), fieldPath, expectedValue);
     }
 
-    @Then("response should contain {string}")
-    public void response_should_contain(String name) {
-        response.then().body("data.first_name", equalTo(name));
+    @Then("the response field {string} should be the integer {int}")
+    public void verifyIntField(String fieldPath, int expectedValue) {
+        Response currentResponse = getResponse();
+        ResponseAssertions.assertField(currentResponse, fieldPath, expectedValue);
+    }
+    @Then("the update status code should be {int}")
+    public void verifyUpdateStatus(int code) {
+        Response currentResponse = getResponse();
+        ResponseAssertions.assertStatusCode(currentResponse, code);
     }
 }
