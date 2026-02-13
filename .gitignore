@@ -1,38 +1,42 @@
+# --- Build Artifacts ---
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
-*.iml
-*.ipr
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+out/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# --- Allure Reporting ---
+# Ignore the raw results and the generated HTML site
+allure-results/
+**/allure-results/
+allure-report/
+target/site/allure-maven-plugin/
+allure-report.zip
+
+# --- Log files ---
+*.log
+logs/
+
+# --- IDE Settings ---
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.settings/
+.project
+.classpath
+bin/
+
+# Visual Studio Code
 .vscode/
 
-### Mac OS ###
+# --- OS temporary files ---
 .DS_Store
+Thumbs.db
+
+# --- Sensitive Information ---
+# If you eventually use .env files for passwords/tokens
+.env
+secret.properties

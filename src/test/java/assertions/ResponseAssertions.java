@@ -1,2 +1,4 @@
-package assertions;public class ResponseAssertions {
+package assertions;
+
+public class ResponseAssertions {
 }

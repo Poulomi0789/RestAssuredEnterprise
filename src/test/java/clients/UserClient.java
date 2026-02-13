@@ -1,2 +1,4 @@
-package clients;public class UserClient {
+package clients;
+
+public class UserClient {
 }

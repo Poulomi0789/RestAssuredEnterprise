@@ -1,2 +1,4 @@
-package hooks;public class Hooks {
+package hooks;
+
+public class Hooks {
 }

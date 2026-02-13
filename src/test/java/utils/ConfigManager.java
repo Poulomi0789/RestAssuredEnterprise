@@ -1,2 +1,4 @@
-package utils;public class ConfigManager {
+package utils;
+
+public class ConfigManager {
 }
